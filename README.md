@@ -34,5 +34,5 @@ python app.py
 ### 5. Open in Browser
 App shuru hone ke baad apne browser me ye link kholein:
 ```text
-http://127.0.0
+http://127.0.1:5000
 ```
