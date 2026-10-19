@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Network Analysis - DAA Mini Project</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            width: 100%;
+            max-width: 850px;
+            text-align: center;
+        }
+        h1 { color: #38bdf8; margin-bottom: 5px; }
+        .subtitle { color: #94a3b8; margin-top: 0; font-size: 14px; margin-bottom: 30px; }
+        .control-box {
+            background-color: #1e293b;
+            padding: 20px;
+            border-radius: 10px;
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            border: 1px solid #334155;
+            margin-bottom: 20px;
+        }
+        .input-group { display: flex; flex-direction: column; text-align: left; }
+        label { font-size: 12px; color: #94a3b8; margin-bottom: 5px; text-transform: uppercase; }
+        select {
+            padding: 10px;
+            background-color: #0f172a;
+            color: white;
+            border: 1px solid #475569;
+            border-radius: 6px;
+            outline: none;
+            min-width: 130px;
+        }
+        button {
+            background-color: #0284c7;
+            color: white;
+            border: none;
+            padding: 11px 25px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.2s ease;
+            margin-top: 18px;
+        }
+        button:hover { background-color: #0369a1; }
+        #outputMessage {
+            margin: 20px 0;
+            padding: 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            display: none;
+        }
+        .graph-container {
+            background-color: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 10px;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+            align-items: center;
+            position: relative;
+        }
+        .row {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            position: relative;
+        }
+        .node-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 120px;
+        }
+        .node {
+            width: 85px;
+            height: 85px;
+            border-radius: 50%;
+            background-color: #475569;
+            border: 3px solid #334155;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            color: white;
+            z-index: 5;
+        }
+        /* Connection Lines CSS Setup */
+        .line-h {
+            position: absolute;
+            height: 4px;
+            background-color: #475569;
+            top: 50%;
+            margin-top: -2px;
+            z-index: 1;
+            width: 120px;
+            left: 105px;
+        }
+        .line-v {
+            position: absolute;
+            width: 4px;
+            background-color: #475569;
+            left: 50%;
+            margin-left: -2px;
+            z-index: 1;
+            height: 45px;
+            top: 88px;
+        }
+        /* Active Glowing highlights mapping */
+        .node.highlighted {
+            background-color: #10b981;
+            border-color: #047857;
+            box-shadow: 0 0 20px #10b981;
+            transform: scale(1.1);
+        }
+        .line-h.highlighted, .line-v.highlighted {
+            background-color: #10b981;
+            box-shadow: 0 0 8px #10b981;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Shortest Path Analysis in Social Networks</h1>
+        <p class="subtitle">DAA Mini Project — BFS Visual Framework</p>
+        
+        <div class="control-box">
+            <div class="input-group">
+                <label for="startNode">Source User:</label>
+                <select id="startNode">
+                    <option value="Alice">Alice</option>
+                    <option value="Bob">Bob</option>
+                    <option value="Charlie">Charlie</option>
+                    <option value="David">David</option>
+                    <option value="Eve">Eve</option>
+                    <option value="Frank">Frank</option>
+                </select>
+            </div>
+            
+            <div class="input-group">
+                <label for="endNode">Target User:</label>
+                <select id="endNode">
+                    <option value="Alice">Alice</option>
+                    <option value="Bob">Bob</option>
+                    <option value="Charlie">Charlie</option>
+                    <option value="David">David</option>
+                    <option value="Eve">Eve</option>
+                    <option value="Frank" selected>Frank</option>
+                </select>
+            </div>
+            
+            <button onclick="findShortestPath()">Find Shortest Path</button>
+        </div>
+
+        <div id="outputMessage"></div>
+
+        <div class="graph-container">
+            <!-- First Row Map -->
+            <div class="row">
+                <div class="node-container">
+                    <div class="node" id="node-Alice">Alice</div>
+                    <div class="line-h" id="edge-Alice-Bob"></div>
+                    <div class="line-v" id="edge-Alice-David"></div>
+                </div>
+                <div class="node-container">
+                    <div class="node" id="node-Bob">Bob</div>
+                    <div class="line-h" id="edge-Bob-Charlie"></div>
+                    <div class="line-v" id="edge-Bob-Eve"></div>
+                </div>
+                <div class="node-container">
+                    <div class="node" id="node-Charlie">Charlie</div>
+                    <div class="line-v" id="edge-Charlie-Frank"></div>
+                </div>
+            </div>
+
+            <!-- Spacer element for alignment structure -->
+            <div style="height: 10px;"></div>
+
+            <!-- Second Row Map -->
+            <div class="row">
+                <div class="node-container">
+                    <div class="node" id="node-David">David</div>
+                    <div class="line-h" id="edge-David-Eve"></div>
+                </div>
+                <div class="node-container">
+                    <div class="node" id="node-Eve">Eve</div>
+                    <div class="line-h" id="edge-Eve-Frank"></div>
+                </div>
+                <div class="node-container">
+                    <div class="node" id="node-Frank">Frank</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function findShortestPath() {
+            const start = document.getElementById('startNode').value;
+            const end = document.getElementById('endNode').value;
+            const output = document.getElementById('outputMessage');
+
+            // Reset elements to default state mapping
+            document.querySelectorAll('.node, .line-h, .line-v').forEach(el => {
+                el.classList.remove('highlighted');
+            });
+
+            if (start === end) {
+                output.style.display = "block";
+                output.style.backgroundColor = "#ef4444";
+                output.innerText = "Source and Target users cannot be same!";
+                return;
+            }
+
+            try {
+                const response = await fetch('/find-path', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ start, end })
+                });
+                const data = await response.json();
+
+                output.style.display = "block";
+                if (data.success) {
+                    output.style.backgroundColor = "#065f46";
+                    output.innerText = `Shortest Path (BFS): ${data.path.join(' ➔ ')} | Total Hops: ${data.distance}`;
+
+                    // Highlight dynamic nodes array pathway
+                    data.path.forEach(nodeId => {
+                        document.getElementById(`node-${nodeId}`).classList.add('highlighted');
+                    });
+
+                    // Highlight valid lines/edges between sequentially listed elements
+                    for (let i = 0; i < data.path.length - 1; i++) {
+                        const u = data.path[i];
+                        const v = data.path[i + 1];
+
+                        const line1 = document.getElementById(`edge-${u}-${v}`);
+                        const line2 = document.getElementById(`edge-${v}-${u}`);
+
+                        if (line1) line1.classList.add('highlighted');
+                        if (line2) line2.classList.add('highlighted');
+                    }
+                } else {
+                    output.style.backgroundColor = "#ef4444";
+                    output.innerText = data.message;
+                }
+            } catch (err) {
+                output.style.display = "block";
+                output.style.backgroundColor = "#ef4444";
+                output.innerText = "Execution error: " + err.message;
+            }
+        }
+    </script>
+</body>
+</html>
